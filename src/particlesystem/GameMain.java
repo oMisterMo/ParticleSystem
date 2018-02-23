@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 
 package particlesystem;
 
@@ -21,7 +16,7 @@ public class GameMain {
      */
     public static void main(String[] args) {
         //Variables
-        JFrame window = new JFrame("Pysics");
+        JFrame window = new JFrame("Particle System");
         GamePanel game = new GamePanel();
         
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

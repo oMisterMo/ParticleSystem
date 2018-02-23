@@ -5,6 +5,7 @@ package particlesystem;
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+import common.Vector2D;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -15,21 +16,17 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
-
 import java.util.ArrayList;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * 16/05/2016
- * 
+ *
  * @author Mo
  */
 public class GamePanel extends JPanel implements Runnable {
 
     //GAMES WIDTH & HEIGHT
-    public static final int GAME_WIDTH = 1200;
+    public static final int GAME_WIDTH = 600;
     public static final int GAME_HEIGHT = 600;
 
     private Thread thread;
@@ -38,42 +35,36 @@ public class GamePanel extends JPanel implements Runnable {
     private Graphics2D g;
 
     private final int FPS = 60;
-    
+
     private long averageFPS;
     //dont need -> Checks to see if game loop sleeps for negative time
     private int counter = 0;
 
-
     //GAME VARIABLES HERE-------------------------------------------------------
-    private final static int NO_OF_PARTICLES = 53;
-    
     private Color backgroundColor;    //Represents colour of background
 //    private Particle[] p;
-    private ArrayList<Particle> fireworks;
-    
+    private ParticleSystem ps;
     private Particle particle;
-
-    
 
     //CONSTRUCTOR
     public GamePanel() {
         super();
-        setPreferredSize(new Dimension(GAME_WIDTH-10, GAME_HEIGHT-10));
+        setPreferredSize(new Dimension(GAME_WIDTH - 10, GAME_HEIGHT - 10));
         setFocusable(true);
         //System.out.println(requestFocusInWindow());
         requestFocus(); //-> platform dependant
-        
+
         //initialise varialbes
         init();
     }
-    
-    private void init(){
+
+    private void init() {
         backgroundColor = new Color(0, 0, 0);    //Represents colour of background
         //backgroundColor = new Color(255, 255, 255);    //Represents colour of background
-        
-        fireworks = new ArrayList<>(NO_OF_PARTICLES);
+
+        ps = new ParticleSystem();
 //        p = new Particle[NO_OF_PARTICLES];
-        
+
         //comment out below
 //        for(int i=0; i<NO_OF_PARTICLES; i++){
 //            //Math.Pi doesn't matter for now, calls methods random funct
@@ -83,45 +74,46 @@ public class GamePanel extends JPanel implements Runnable {
 //                                                               //speed, gravity
 //            fireworks.add(new Particle(GAME_WIDTH/2, 100, 15.0, 10.0));
 //        }
-        
-        
         //Read about graph representation
         int oDeg = 53;
-        int deg = 360-oDeg;
-        System.out.println("deg: "+oDeg + " (fake: "+deg+")");
-        System.out.println("rad: "+Math.toRadians(deg));
-                                            //angle, magnitude
+        int deg = 360 - oDeg;
+        System.out.println("deg: " + oDeg + " (fake: " + deg + ")");
+        System.out.println("rad: " + Math.toRadians(deg));
+        //angle, magnitude
         //Age
-        float age = 8000f;
+        float age = 3f;
         //Position/velocity
-        Vector2D position = new Vector2D(400,400);
-        Vector2D velocity = new Vector2D(0, -100);
-        Vector2D acceleration = new Vector2D(0, 75);
+        float width = 20f;
+        float height = 20f;
+        float centerX = GAME_WIDTH /2 - width/2;
+        float centerY = GAME_HEIGHT /2 - height/2;
         float damp = 1.0f;
         //Rotation
-        float initRot = 45.0f;   //rot += rotVel;
-        float initRotVel = 45.0f;
+        float initRot = 0f;   //rot += rotVel;
+        float initRotVel = 0f;
         float initRotDamp = 1.0f; //no dampening
         //Scale
         float initScale = 1.0f;
-        float initScaleVel = 0.2f;
-        float initScaleAcc = -0.1f;
-        float initScaleMax = 2.0f;
+        float initScaleVel = 0f;
+        float initScaleAcc = 0f;
+        float initScaleMax = 1.0f;
+
         
-        particle = new Particle(age, position, velocity, acceleration, damp,
-        initRot, initRotVel, initRotDamp,
-        initScale, initScaleVel, initScaleAcc, initScaleMax);
-        
+        particle = new Particle(centerX, centerY, width, height,
+                age, damp,
+                initRot, initRotVel, initRotDamp,
+                initScale, initScaleVel, initScaleAcc, initScaleMax
+        );
+
         //Load listeners
         addKeyListener(new TAdapter());
         addMouseListener(new MAdapter());
     }
 
     //METHODS
-    
     /*
      Is called after our JPanel has been added to the JFrame component.
-    */
+     */
     @Override
     public void addNotify() {
         super.addNotify();
@@ -140,7 +132,7 @@ public class GamePanel extends JPanel implements Runnable {
         long totalTime = 0;
         long waitTime;
         long targetTime = 1000 / FPS;
-        
+
         //To test independent speed
         long start2 = 0;
         long timeMillis2 = 0;
@@ -156,18 +148,16 @@ public class GamePanel extends JPanel implements Runnable {
         while (running) {
             deltaTime = (System.nanoTime() - startTime) / 1000000000.0f;
             startTime = System.nanoTime();
-            
+
             //dt = 0.016 (60fps) dt = 0.032 (30fps)
 //            //lock time so physics doesn't go crazy
 //            if(deltaTime > 0.013){
 //                deltaTime = 0.013f;
 //            }
-            
 //            System.out.println("Delta Time: "+deltaTime+"s");
             //start2 = System.nanoTime();
             gameUpdate(deltaTime);
             //timeMillis2 = (System.nanoTime() - start2) / 1000000;
-
             //start2 = System.nanoTime();
             gameRender(g);
             //timeMillis3 = (System.nanoTime() - start2) / 1000000;
@@ -175,11 +165,10 @@ public class GamePanel extends JPanel implements Runnable {
             //start2 = System.nanoTime();
             gameDraw();
             //timeMillis4 = (System.nanoTime() - start2) / 1000000;
-            
+
 //            gameUpdate();
 //            gameRender(g);
 //            gameDraw();
-            
             //How long it took to run
             timeTaken = (System.nanoTime() - startTime) / 1000000;
             //              16ms - targetTime
@@ -189,10 +178,10 @@ public class GamePanel extends JPanel implements Runnable {
             if (waitTime < 0) {
                 //I get a negative value at the beg
                 System.out.println(counter++ + " - NEGATIVE: " + waitTime);
-                System.out.println("targetTime = "+ targetTime);
-                System.out.println("timeTaken = " + timeTaken+"\n");
+                System.out.println("targetTime = " + targetTime);
+                System.out.println("timeTaken = " + timeTaken + "\n");
             }
-            
+
 //            //Speed TEST methods
 //            if(frameCount >= 58) {
 //                //Test the time taken to run
@@ -201,7 +190,6 @@ public class GamePanel extends JPanel implements Runnable {
 //                System.out.println("Draw time: " + timeMillis4);
 //                System.out.println("------------------------------------------");
 //            }
-            
             try {
                 //System.out.println("Sleeping for: " + waitTime);
                 //thread.sleep(waitTime);
@@ -224,48 +212,22 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     private void gameUpdate(float deltaTime) {
-        
+
         //********** Do updates HERE **********
-        
-//        for(Particle p: fireworks){
-//            p.gameUpdate(deltaTime);
-//        }
-//        System.out.println("");
-        
         particle.gameUpdate(deltaTime);
-        
-//        //Check for collisions
-//        if(Collides(head.get(0), food)){
-//            food.drawNewFood();
-//            addBody();
-//        }
     }
 
     private void gameRender(Graphics2D g) {
         //Clear screen
         g.setColor(backgroundColor);
         g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-        
+
         //********** Do drawings HERE **********
-        
-//        for(Particle p: fireworks){
-//            p.gameRender(g);
-//        }
-        
         particle.gameRender(g);
-        
-        //Draw number line
-        g.setColor(Color.WHITE);
-        for(int i=50; i<GAME_WIDTH; i+=50){
-            g.drawString(Integer.toString(i), i, GAME_HEIGHT - 40);
-            g.drawString(Integer.toString(i), 0+40, GAME_HEIGHT-i);
-        }
-//        for(int i=GAME_HEIGHT; i>50; i-=50){
-//        }
-        g.drawString("Meters (1px = 1m)", GAME_WIDTH/2 - 150, GAME_HEIGHT-17);
+
         //Draw text information
         g.setColor(Color.RED);
-        g.drawString("FPS:" + averageFPS, 25, 25);    
+        g.drawString("FPS:" + averageFPS, 25, 25);
     }
 
     private void gameDraw() {
@@ -273,22 +235,15 @@ public class GamePanel extends JPanel implements Runnable {
         g2.drawImage(image, 0, 0, null);
         g2.dispose();
     }
-    
-    private boolean Collides(GameObject one, GameObject two){
-        //does first object collides with second?
-        return one.getHitbox().intersects(two.getHitbox());
-    }
-    
-    
-    
+
     //Handle Input ** Inner Class
-    private class TAdapter extends KeyAdapter{
+    private class TAdapter extends KeyAdapter {
 
         //When a key is pressed, let the CRAFT class deal with it.
         @Override
         public void keyPressed(KeyEvent e) {
             //Handle player from world movement
-            
+
 //            ship.keyPressed(e);
         }
 
@@ -297,33 +252,27 @@ public class GamePanel extends JPanel implements Runnable {
 //            ship.keyReleased(e);
         }
     }
-    
-    private class MAdapter implements MouseListener{
 
+    private class MAdapter implements MouseListener {
 
         @Override
         public void mouseClicked(MouseEvent e) {
             //System.out.println("CLICKED");
-            
             //Clicked in one position
         }
 
         @Override
         public void mousePressed(MouseEvent e) {
             //System.out.println("PRESSED");
-            
-//            test.mousePressed(e);
-            //transition.mousePressed(e);
-//            dragon.mousePressed(e);
-            for(int i=0; i<fireworks.size(); i++){
-                fireworks.get(i).mousePressed(e);
-            }
+//            for (int i = 0; i < fireworks.size(); i++) {
+//                fireworks.get(i).mousePressed(e);
+//            }
         }
 
         @Override
         public void mouseReleased(MouseEvent e) {
             //System.out.println("RELEASED");
-            particle.mouseReleased(e);
+//            particle.mouseReleased(e);
         }
 
         @Override
@@ -335,13 +284,12 @@ public class GamePanel extends JPanel implements Runnable {
         public void mouseExited(MouseEvent e) {
             //System.out.println("EXITED");
         }
-        
+
     }
-    
+
     //Getters and Setters
-    public Color getColor(){
+    public Color getColor() {
         return backgroundColor;
     }
-    
 
 }
