@@ -1,11 +1,5 @@
 package particlesystem;
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-import common.Vector2D;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -16,7 +10,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
 
 /**
  * 16/05/2016
@@ -65,15 +58,6 @@ public class GamePanel extends JPanel implements Runnable {
         ps = new ParticleSystem();
 //        p = new Particle[NO_OF_PARTICLES];
 
-        //comment out below
-//        for(int i=0; i<NO_OF_PARTICLES; i++){
-//            //Math.Pi doesn't matter for now, calls methods random funct
-//            //p[i] = new Particle(GAME_WIDTH/2, GAME_HEIGHT/2, 3, 00000, 0.2);
-////            fireworks.add(new Particle(GAME_WIDTH/2, GAME_HEIGHT/2, 60.0, 0.3));
-//            
-//                                                               //speed, gravity
-//            fireworks.add(new Particle(GAME_WIDTH/2, 100, 15.0, 10.0));
-//        }
         //Read about graph representation
         int oDeg = 53;
         int deg = 360 - oDeg;
@@ -81,7 +65,7 @@ public class GamePanel extends JPanel implements Runnable {
         System.out.println("rad: " + Math.toRadians(deg));
         //angle, magnitude
         //Age
-        float age = 3f;
+        float age = 23f;
         //Position/velocity
         float width = 20f;
         float height = 20f;
@@ -89,21 +73,23 @@ public class GamePanel extends JPanel implements Runnable {
         float centerY = GAME_HEIGHT /2 - height/2;
         float damp = 1.0f;
         //Rotation
-        float initRot = 0f;   //rot += rotVel;
-        float initRotVel = 0f;
-        float initRotDamp = 1.0f; //no dampening
+        float initRot = 45f;   //rot += rotVel;
+        float initRotVel = 200f;
+        float initRotDamp = 1f; //no dampening
         //Scale
         float initScale = 1.0f;
-        float initScaleVel = 0f;
+        float initScaleVel = 0.8f;
         float initScaleAcc = 0f;
-        float initScaleMax = 1.0f;
-
+        float initScaleMax = 10.0f;
         
         particle = new Particle(centerX, centerY, width, height,
                 age, damp,
                 initRot, initRotVel, initRotDamp,
                 initScale, initScaleVel, initScaleAcc, initScaleMax
         );
+        
+        particle.velocity.set(0,-100);
+        particle.acceleration.set(0,50);
 
         //Load listeners
         addKeyListener(new TAdapter());
@@ -214,7 +200,8 @@ public class GamePanel extends JPanel implements Runnable {
     private void gameUpdate(float deltaTime) {
 
         //********** Do updates HERE **********
-        particle.gameUpdate(deltaTime);
+//        particle.gameUpdate(deltaTime);
+        ps.gameUpdate(deltaTime);
     }
 
     private void gameRender(Graphics2D g) {
@@ -223,8 +210,10 @@ public class GamePanel extends JPanel implements Runnable {
         g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
         //********** Do drawings HERE **********
-        particle.gameRender(g);
+//        particle.gameRender(g);
+        ps.gameRender(g);
 
+//        g.drawLine(GAME_WIDTH/2, 0, GAME_WIDTH/2, GAME_HEIGHT);
         //Draw text information
         g.setColor(Color.RED);
         g.drawString("FPS:" + averageFPS, 25, 25);
@@ -264,9 +253,7 @@ public class GamePanel extends JPanel implements Runnable {
         @Override
         public void mousePressed(MouseEvent e) {
             //System.out.println("PRESSED");
-//            for (int i = 0; i < fireworks.size(); i++) {
-//                fireworks.get(i).mousePressed(e);
-//            }
+            ps.mousePressed(e);
         }
 
         @Override
