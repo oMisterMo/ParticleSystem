@@ -54,9 +54,8 @@ public class GamePanel extends JPanel implements Runnable {
     private Fireworks fireworkSystem;
     private float elapsed = 0;
 
-    //CONSTRUCTOR
     /**
-     *
+     * Default constructor.
      */
     public GamePanel() {
         super();
@@ -106,8 +105,8 @@ public class GamePanel extends JPanel implements Runnable {
         while (running) {
             /*Update and render*/
 
-            long start = System.currentTimeMillis();
-            float deltaTime = (start - lastTime) / 1000f; //ms -> seconds
+            long current = System.currentTimeMillis();
+            float deltaTime = (current - lastTime) / 1000f; //ms -> seconds
             //Cap deltaTime
             if (deltaTime > 0.1f) {
                 deltaTime = 0.1f;
@@ -119,10 +118,10 @@ public class GamePanel extends JPanel implements Runnable {
             gameUpdate(deltaTime);
             gameRender(g);
             gameDraw();
-            lastTime = start;
+            lastTime = current;
 
             /*Calculate sleep time*/
-            waitTime = (long) ((targetTime + start - System.currentTimeMillis()));
+            waitTime = (long) ((targetTime + current - System.currentTimeMillis()));
             try {
                 //System.out.println("Sleeping for: " + waitTime);
                 //thread.sleep(waitTime);
@@ -130,7 +129,7 @@ public class GamePanel extends JPanel implements Runnable {
             } catch (Exception ex) {
 
             }
-            totalTime += System.currentTimeMillis() - start;
+            totalTime += System.currentTimeMillis() - current;
             frameCount++;
 
             /*Debug*/
@@ -145,7 +144,8 @@ public class GamePanel extends JPanel implements Runnable {
             if (waitTime < 0) {
                 //I get a negative value at the beg
                 System.out.println("NEGATIVE: " + waitTime);
-                System.out.println("timeTaken = " + (System.currentTimeMillis() - start));
+                System.out.println("timeTaken = "
+                        + (System.currentTimeMillis() - current));
             }
         }
     }
@@ -174,7 +174,7 @@ public class GamePanel extends JPanel implements Runnable {
         g2.dispose();
     }
 
-    //Handle Input ** Inner Class
+    //Inner Class
     private class TAdapter extends KeyAdapter {
 
         @Override
@@ -217,10 +217,4 @@ public class GamePanel extends JPanel implements Runnable {
         }
 
     }
-
-    //Getters and Setters
-    public Color getColor() {
-        return backgroundColor;
-    }
-
 }
